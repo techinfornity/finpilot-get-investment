@@ -1,0 +1,15 @@
+{
+  "name": "finpilot-get-bank-investment",
+  "version": "1.0.0",
+  "description": "This lambda is used to get the bank investment from the dynamodb table",
+  "main": "src/stock/BankInvestmentDetail.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.500.0",
+    "@aws-sdk/lib-dynamodb": "^3.500.0"
+  },
+  "author": "",
+  "license": "ISC"
+}
