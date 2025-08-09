@@ -6,13 +6,21 @@ const region = 'ap-south-1';
 const ddbClient = new DynamoDBClient({ region });
 const docClient = DynamoDBDocumentClient.from(ddbClient);
 
-const fetchAllFromTable = async (tableName) => {
-    const params = { TableName: tableName };
+const fetchAllFromTable = async (tableName, userId) => {
+    let params = { TableName: tableName };
+    if (userId) {
+        params = {
+            ...params,
+            FilterExpression: '#uid = :uid',
+            ExpressionAttributeNames: { '#uid': 'user_id' },
+            ExpressionAttributeValues: { ':uid': userId }
+        };
+    }
     const data = await docClient.send(new ScanCommand(params));
     return data.Items || [];
 };
 
-const fetchAssetTable = async (assetType) => {
+const fetchAssetTable = async (assetType, userId) => {
     const tableMap = {
         CASH: 'fp_cash_investment',
         FD: 'fp_fd_investment',
@@ -20,11 +28,11 @@ const fetchAssetTable = async (assetType) => {
         GOLD: 'fp_gold_investment',
     };
     const tableName = tableMap[assetType] || 'fp_cash_investment';
-    return fetchAllFromTable(tableName);
+    return fetchAllFromTable(tableName, userId);
 };
 
-const getAssetDetails = async (assetType) => {
-    const investments = await fetchAssetTable(assetType);
+const getAssetDetails = async (assetType, userId) => {
+    const investments = await fetchAssetTable(assetType, userId);
     switch (assetType) {
         case 'CASH':
             return investments.map(investment => ({
