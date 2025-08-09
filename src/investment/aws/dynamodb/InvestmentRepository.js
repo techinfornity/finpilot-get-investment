@@ -60,7 +60,8 @@ const getAssetDetails = async (assetType, userId) => {
             return investments.map(investment => ({
                 type: investment['type'],
                 weight: investment['weight'],
-                value: investment['value'],
+                buyPrice: investment['buy_price'],
+                marketPrice: investment['market_price'],
                 sk: investment['sk']
             }));
         default:
