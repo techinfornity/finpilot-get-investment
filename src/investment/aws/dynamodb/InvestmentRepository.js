@@ -47,6 +47,7 @@ const getAssetDetails = async (assetType, userId) => {
                 amount: investment['amount'],
                 rate: investment['rate'],
                 maturityDate: investment['maturity_date'],
+                investmentDate: investment['investment_date'],
                 sk: investment['sk']
             }));
         case 'REAL_ESTATE':
