@@ -1,4 +1,4 @@
-const { getAssetDetails } = require('./aws/dynamodb/InvestmentRepository');
+const { getAssetDetails, getInvestmentSummaryHistory } = require('./aws/dynamodb/InvestmentRepository');
 
 exports.handler = async (event) => {
     try {
@@ -6,9 +6,14 @@ exports.handler = async (event) => {
         const assetType = body && body.assetType ? body.assetType.toUpperCase() : 'CASH';
         const userId = body && body.username ? body.username : undefined;
         const result = await getAssetDetails(assetType, userId);
+        let response = { assetType, details: result };
+        if (assetType === 'CASH') {
+            const investmentSummaryHistory = await getInvestmentSummaryHistory(userId);
+            response.investmentSummaryHistory = investmentSummaryHistory;
+        }
         return {
             statusCode: 200,
-            body: JSON.stringify({ assetType, details: result })
+            body: JSON.stringify(response)
         };
     } catch (error) {
         console.log(error);

@@ -1,6 +1,5 @@
-
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, ScanCommand } = require('@aws-sdk/lib-dynamodb');
+const { DynamoDBDocumentClient, ScanCommand, QueryCommand } = require('@aws-sdk/lib-dynamodb');
 
 const region = 'ap-south-1';
 const ddbClient = new DynamoDBClient({ region });
@@ -70,4 +69,37 @@ const getAssetDetails = async (assetType, userId) => {
     }
 };
 
-module.exports = { getAssetDetails };
+const getInvestmentSummaryHistory = async (userId) => {
+    if (!userId) return [];
+
+    const params = {
+        TableName: 'fp_investment_summary',
+        KeyConditionExpression: '#uid = :uid',
+        ExpressionAttributeNames: { '#uid': 'user_id' },
+        ExpressionAttributeValues: { ':uid': userId },
+        ScanIndexForward: false, // Descending order by updated_at
+        Limit: 12
+    };
+    try {
+        const data = await docClient.send(new QueryCommand(params));
+        // Sort by updated_at descending (in case sort key is not updated_at)
+        const items = (data.Items || []).sort((a, b) => {
+            if (!a.updated_at || !b.updated_at) return 0;
+            return b.updated_at.localeCompare(a.updated_at);
+        });
+        return items.map(item => ({
+            userId: item.user_id,
+            updatedAt: item.updated_at,
+            cash: item.cash,
+            fd: item.fd,
+            gold: item.gold,
+            realEstate: item.real_estate,
+            total: item.total
+        }));
+    } catch (err) {
+        console.log('Error fetching investment summary history:', err);
+        return [];
+    }
+};
+
+module.exports = { getAssetDetails, getInvestmentSummaryHistory };
